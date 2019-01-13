@@ -54,6 +54,41 @@ document.onkeyup = onkeyup;
 // Initialization 
 //////////////////////////////////////////////////////////////////////////////
 
+function plane(origx, origy) {
+  var plane = new createjs.Container();
+  function draw(x,y, color) {
+    var square = new createjs.Shape();
+    square.graphics
+      .beginFill(color)
+      .drawRect(origx+x*BLOCK_W, origy+y*BLOCK_H, BLOCK_W, BLOCK_H);
+    plane.addChild(square);
+  }
+
+  var mask = [
+    [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 0],
+    [1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 1],
+    [0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [0, 0, 0, 0, 0, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 ,0, 0, 0, 0],
+  ];
+
+  for (var i = 0; i < mask.length; i++) {
+    for (var j = 0; j < mask[i].length; j++) {
+      if      (mask[i][j] == 1) draw(j,i,"#222222");
+      else if (mask[i][j] == 2) draw(j,i,"#111111");
+    }
+  }
+
+  return plane;
+}
+
 function init() {
   gameState = GAME;
 
@@ -61,6 +96,11 @@ function init() {
   bg = new createjs.Shape();
   bg.graphics.beginFill("black").drawRect(0, 0, WIDTH, HEIGHT);
   stage.addChild(bg);
+  
+  var planex = (WIDTH - 17 * BLOCK_W) / 2;
+  var planey =  (HEIGHT - 12 * BLOCK_H) / 2;
+  var bgplane = plane(planex, planey);
+  stage.addChild(bgplane);
 
   player = new Snake();
   stage.addChild(player.body);
