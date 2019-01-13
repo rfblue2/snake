@@ -15,6 +15,7 @@ var RIGHT = 39;
 var DOWN  = 40;
 
 var P     = 80;
+var R     = 82;
 
 // Game states
 var GAME   = "game";
@@ -64,8 +65,9 @@ function init() {
   player = new Snake();
   stage.addChild(player.body);
 
-  gameOverText = new createjs.Text("Game Over", "24px Arial", "white");
-  gameOverText.x = WIDTH / 2;
+  gameOverText = new createjs.Text(
+    "Game Over (press R to restart)", "24px \"Courier New\"", "white");
+  gameOverText.x = WIDTH / 2 - 200;
   gameOverText.y = HEIGHT / 2;
 
   foodMngr = new FoodMngr();
@@ -80,7 +82,7 @@ function init() {
 function ScoreMngr() {
   var self = this;
 
-  self.body = new createjs.Text("Score: 0", "24px Arial", "white");
+  self.body = new createjs.Text("Score: 0", "24px \"Courier New\"", "white");
   self.body.x = 0;
   self.body.y = 0;
 
@@ -88,6 +90,10 @@ function ScoreMngr() {
 
   self.update = function() {
     self.body.text = "Score: " + self.score;
+  }
+
+  self.reset = function() {
+    self.score = 0;
   }
 }
 
@@ -208,6 +214,20 @@ function Snake() {
     return true;
   }
 
+  self.reset = function() {
+    self.state = PLAYER_IDLE;
+
+    self.body.removeAllChildren();
+    self.segments = [];
+
+    self.addSegment();
+    self.segments[0].body.x = 1 * BLOCK_W;
+    self.segments[0].body.y = 1 * BLOCK_H;
+
+    self.movedSince = false;
+
+  }
+
 }
 
 function Food() {
@@ -225,6 +245,7 @@ function Food() {
   self.collision = function(x, y) {
     return (x == self.x && y == self.y);
   }
+
 }
 
 function FoodMngr() {
@@ -262,6 +283,19 @@ function FoodMngr() {
     return false;
   }
 
+  self.reset = function() {
+    self.body.removeAllChildren();
+    self.foods = [];
+  }
+
+}
+
+function reset() {
+  player.reset();
+  scoreMngr.reset();
+  foodMngr.reset();
+  stage.removeChild(gameOverText);
+  gameState = GAME;
 }
     
 //////////////////////////////////////////////////////////////////////////////
@@ -278,10 +312,12 @@ function onkeydown(event) {
 function onkeyup(event) {
   keys[event.keyCode] = false;
 
-  if (event.keyCode == P) {
-    switch (gameState) {
-      case GAME:   gameState = PAUSED; break;
-      case PAUSED: gameState = GAME; break;
+  if (gameState == GAME || gameState == PAUSED) {
+    if (event.keyCode == P) {
+      switch (gameState) {
+        case GAME:   gameState = PAUSED; break;
+        case PAUSED: gameState = GAME; break;
+      }
     }
   }
 
@@ -291,6 +327,8 @@ function onkeyup(event) {
         player.updateState(event.keyCode);
       }
     }
+  } else if (gameState == END && event.keyCode == R) {
+    reset();
   }
 }
 
