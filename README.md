@@ -12,4 +12,5 @@ Make sure you have gulp installed.
 npm install
 gulp
 ```
-Gulp with bundle the JS files into the dist/ folder
+Gulp with bundle the JS files into the dist/ folder.
+Serve with a local server, e.g. `python -m http.server 8000`. 

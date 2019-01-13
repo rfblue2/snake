@@ -1,4 +1,4 @@
-// Roland Fong
+/// Roland Fong
 // Snakes
 // 1/11/19
 
@@ -18,6 +18,7 @@ var P     = 80;
 var R     = 82;
 
 // Game states
+var INIT   = "init";
 var GAME   = "game";
 var PAUSED = "pause";
 var END    = "end";
@@ -44,6 +45,7 @@ var gameState;
 var gameOverText;
 var scoreMngr;
 var foodMngr;
+var bgmusic;
   
 var keys = {}
 
@@ -90,7 +92,14 @@ function plane(origx, origy) {
 }
 
 function init() {
-  gameState = GAME;
+  var queue = new createjs.LoadQueue();
+  queue.installPlugin(createjs.Sound);
+  queue.on("complete", setup, this);
+  queue.loadFile({id:"music", src:"../audio/bringit.mp3"});
+}
+
+function setup() {
+  gameState = INIT;
 
   stage = new createjs.Stage("demoCanvas");
   bg = new createjs.Shape();
@@ -335,7 +344,11 @@ function reset() {
   scoreMngr.reset();
   foodMngr.reset();
   stage.removeChild(gameOverText);
-  gameState = GAME;
+  gameState = INIT;
+
+  // restart track
+  bgmusic.position = 0;
+  bgmusic.paused = true;
 }
     
 //////////////////////////////////////////////////////////////////////////////
@@ -344,6 +357,17 @@ function reset() {
 
 function onkeydown(event) {
   keys[event.keyCode] = true;
+
+  if (gameState == INIT) {
+    // (re)start the music when player makes their move
+    if (!bgmusic) {
+      bgmusic = createjs.Sound.play("music", { loop: -1 });
+    } else {
+      bgmusic.paused = false;
+    }
+    gameState = GAME;
+  }
+
   if (gameState == GAME) {
     player.updateState(event.keyCode);
   }
@@ -361,7 +385,7 @@ function onkeyup(event) {
     }
   }
 
-  if (gameState == GAME) {
+  if (gameState == INIT || gameState == GAME) {
     for (var key in [UP, LEFT, DOWN, RIGHT]) {
       if (keys[key]) {
         player.updateState(event.keyCode);
@@ -382,7 +406,7 @@ function endGame() {
 }
 
 function handleTick(event) {
-  if (gameState == GAME) {
+  if (gameState == GAME || gameState == INIT) {
     foodMngr.update();
     player.update();
     scoreMngr.update();
