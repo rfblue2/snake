@@ -1,4 +1,4 @@
-/// Roland Fong
+// Roland Fong
 // Snakes
 // 1/11/19
 
@@ -30,14 +30,18 @@ var PLAYER_UP    = "PLAYER_UP";
 var PLAYER_LEFT  = "PLAYER_LEFT";
 var PLAYER_RIGHT = "PLAYER_RIGHT";
 var PLAYER_DOWN  = "PLAYER_DOWN";
-var PLAYER_LU    = "PLAYER_LU";
-var PLAYER_LD    = "PLAYER_LD";
-var PLAYER_RU    = "PLAYER_RU";
-var PLAYER_RD    = "PLAYER_RD";
-var PLAYER_UL    = "PLAYER_UL";
-var PLAYER_DL    = "PLAYER_DL";
-var PLAYER_UR    = "PLAYER_UR";
-var PLAYER_DR    = "PLAYER_DR";
+
+// Player colors
+var RAINBOW_UPDATE = 3;
+var NUM_RAINBOW    = 6;
+var RED     = "lightcoral";
+var ORANGE  = "lightsalmon";
+var YELLOW  = "khaki";
+var GREEN   = "palegreen";
+var BLUE    = "powderblue";
+var VIOLET  = "plum";
+var WHITE   = "white";
+var RAINBOW = "rainbow";
 
 // Variables
 var stage;
@@ -150,12 +154,16 @@ function ScoreMngr() {
   }
 }
 
-function Segment() {
+function Segment(color) {
   var self = this;
   self.body = new createjs.Shape();
-  self.body.graphics.beginFill("Chartreuse").drawRect(0, 0, BLOCK_W, BLOCK_H);
+  self.body.graphics.beginFill(color).drawRect(0, 0, BLOCK_W, BLOCK_H);
   self.x = 0;
   self.y = 0;
+
+  self.recolor = function(c) {
+    self.body.graphics.beginFill(c).drawRect(0, 0, BLOCK_W, BLOCK_H);
+  }
 
   self.update = function() {
     self.body.x = self.x * BLOCK_W;
@@ -175,17 +183,28 @@ function Snake() {
 
   self.speed = 1;
   self.state = PLAYER_IDLE;
+  self.color = GREEN;
+
+  // for rainbow only
+  self.colorCounter = 0;
+  self.colorUpdateCounter = 0;
 
   self.addSegment = function() {
-    var segment = new Segment();
+    var segment;
+    if (self.color != RAINBOW) {
+      segment = new Segment(self.color);
+    } else {
+      segment = new Segment(WHITE);
+    }
     self.body.addChild(segment.body);
     self.segments.push(segment);
   }
 
-  // create head
+  // create snake head
   self.addSegment();
-  self.segments[0].body.x = 1 * BLOCK_W;
-  self.segments[0].body.y = 1 * BLOCK_H;
+  self.segments[0].x = WIDTH/BLOCK_W/2;
+  self.segments[0].y = HEIGHT/BLOCK_H/2;
+  self.segments[0].update();
 
   self.movedSince = false;
 
@@ -213,18 +232,10 @@ function Snake() {
     var dx = 0;
     var dy = 0;
     switch (dir) {
-      case PLAYER_LEFT:
-        dx -= self.speed;
-        break;
-      case PLAYER_RIGHT:
-        dx += self.speed;
-        break;
-      case PLAYER_UP:
-        dy -= self.speed;
-        break;
-      case PLAYER_DOWN:
-        dy += self.speed;
-        break;
+      case PLAYER_LEFT:  dx -= self.speed; break;
+      case PLAYER_RIGHT: dx += self.speed; break;
+      case PLAYER_UP:    dy -= self.speed; break;
+      case PLAYER_DOWN:  dy += self.speed; break;
     }
 
     // create illusion of movement by removing last element and 
@@ -239,13 +250,33 @@ function Snake() {
       self.segments[0].x += dx;
       self.segments[0].y += dy;
     }
+    self.segments[0].update();
 
   }
 
   self.update = function() {
     self.move(self.state);
-    for (var s of self.segments) {
-      s.update();
+    
+    // use to make colors appear to cycle
+    self.colorCounter = (self.colorCounter + 1) % NUM_RAINBOW; 
+
+    // use to tell when to update colors
+    self.colorUpdateCounter = (self.colorUpdateCounter + 1) % RAINBOW_UPDATE;
+
+    for (var i = 0; i < self.segments.length; i++) {
+      var s = self.segments[i];
+      if (self.color == RAINBOW && 
+        self.colorUpdateCounter % RAINBOW_UPDATE == 0) {
+        var idx = (i + self.colorCounter) % 6;
+        switch (idx) {
+          case 0: s.recolor(VIOLET);  break;
+          case 1: s.recolor(BLUE);    break;
+          case 2: s.recolor(GREEN);   break;
+          case 3: s.recolor(YELLOW);  break;
+          case 4: s.recolor(ORANGE);  break;
+          case 5: s.recolor(RED);     break;
+        }
+      }
     }
   }
 
@@ -269,18 +300,28 @@ function Snake() {
 
   self.reset = function() {
     self.state = PLAYER_IDLE;
+    self.color = GREEN;
 
     self.body.removeAllChildren();
     self.segments = [];
 
+    // create snake head
     self.addSegment();
-    self.segments[0].body.x = 1 * BLOCK_W;
-    self.segments[0].body.y = 1 * BLOCK_H;
+    self.segments[0].x = WIDTH/BLOCK_W/2;
+    self.segments[0].y = HEIGHT/BLOCK_H/2;
+    self.segments[0].update();
 
     self.movedSince = false;
 
   }
 
+  self.recolor = function(color) {
+    self.color = color;
+    if (color == RAINBOW) return; // special coloring in update for rainbow
+    for (var i = 0; i < self.segments.length; i++) {
+      self.segments[i].recolor(color); 
+    }
+  }
 }
 
 function Food() {
@@ -428,6 +469,14 @@ function handleTick(event) {
     if (foodMngr.collision(player.segments[0].x, player.segments[0].y)) {
       scoreMngr.score += 1;
       player.addSegment();
+      switch (scoreMngr.score) {
+        case 5: player.recolor(YELLOW);    break;
+        case 10: player.recolor(RED);      break;
+        case 25: player.recolor(VIOLET);   break;
+        case 50: player.recolor(BLUE);     break;
+        case 75: player.recolor(WHITE);    break;
+        case 100: player.recolor(RAINBOW); break;
+      }
     }
   }
   stage.update()
