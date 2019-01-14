@@ -2,7 +2,7 @@
 Classic snake game.  Eat food to grow bigger.  Careful not to crash into yourself
 or the walls!.
 
-Use arrow keys to move.  Developer high score: 55.
+Use arrow keys to move.  Developer high score: 110.
 
 ![Screenshot](screenshot.png)
 

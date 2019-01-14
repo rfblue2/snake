@@ -14,6 +14,7 @@ var UP    = 38;
 var RIGHT = 39;
 var DOWN  = 40;
 
+var M     = 77;
 var P     = 80;
 var R     = 82;
 
@@ -46,6 +47,7 @@ var gameOverText;
 var scoreMngr;
 var foodMngr;
 var bgmusic;
+var muted;
   
 var keys = {}
 
@@ -95,7 +97,7 @@ function init() {
   var queue = new createjs.LoadQueue();
   queue.installPlugin(createjs.Sound);
   queue.on("complete", setup, this);
-  queue.loadFile({id:"music", src:"../audio/bringit.mp3"});
+  queue.loadFile({id:"music", src:"audio/bringit.mp3"});
 }
 
 function setup() {
@@ -124,6 +126,8 @@ function setup() {
 
   scoreMngr = new ScoreMngr();
   stage.addChild(scoreMngr.body);
+
+  muted = false;
 
   createjs.Ticker.addEventListener("tick", handleTick);
 }
@@ -358,13 +362,21 @@ function reset() {
 function onkeydown(event) {
   keys[event.keyCode] = true;
 
-  if (gameState == INIT) {
+  if (event.keyCode == M && bgmusic) {
+    muted = !muted;
+    bgmusic.volume = (bgmusic.volume + 1) % 2;
+  }
+
+  if (gameState == INIT && 
+    (keys[UP] || keys[DOWN] || keys[LEFT] || keys[RIGHT])) {
     // (re)start the music when player makes their move
     if (!bgmusic) {
       bgmusic = createjs.Sound.play("music", { loop: -1 });
     } else {
       bgmusic.paused = false;
     }
+    if (muted) bgmusic.volume = 0;
+    else       bgmusic.volume = 1;
     gameState = GAME;
   }
 
