@@ -22,6 +22,14 @@
     <script src="https://code.createjs.com/1.0.0/preloadjs.min.js"></script>
     <script src="https://code.createjs.com/1.0.0/soundjs.min.js"></script></head>
     <script src="./dist/js/bundle.js"></script>
+    <script>
+      window.addEventListener("keydown", function(e) {
+            // space and arrow keys
+            if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+                      e.preventDefault();
+                  }
+      }, false);
+    </script>
   </head>
   <body onload="init();">
     <h1 style="text-align: center">Snakes on a Plane!</h1>
