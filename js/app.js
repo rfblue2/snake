@@ -32,7 +32,7 @@ var PLAYER_RIGHT = "PLAYER_RIGHT";
 var PLAYER_DOWN  = "PLAYER_DOWN";
 
 // Player colors
-var RAINBOW_UPDATE = 3;
+var RAINBOW_UPDATE = 5;
 var NUM_RAINBOW    = 6;
 var RED     = "lightcoral";
 var ORANGE  = "lightsalmon";
@@ -265,9 +265,8 @@ function Snake() {
 
     for (var i = 0; i < self.segments.length; i++) {
       var s = self.segments[i];
-      if (self.color == RAINBOW && 
-        self.colorUpdateCounter % RAINBOW_UPDATE == 0) {
-        var idx = (i + self.colorCounter) % 6;
+      if (self.color == RAINBOW && self.colorUpdateCounter == 0) {
+        var idx = (i + self.colorCounter) % NUM_RAINBOW;
         switch (idx) {
           case 0: s.recolor(VIOLET);  break;
           case 1: s.recolor(BLUE);    break;
